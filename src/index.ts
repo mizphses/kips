@@ -1,32 +1,86 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+import { Hono } from 'hono'
+import { Bindings } from './bindings'
+import { createPassClass, createPassObject } from './googlePay'
+import { getAuthToken } from './googleAuth'
 
-export interface Env {
-	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-	// MY_KV_NAMESPACE: KVNamespace;
-	//
-	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
-	// MY_DURABLE_OBJECT: DurableObjectNamespace;
-	//
-	// Example binding to R2. Learn more at https://developers.cloudflare.com/workers/runtime-apis/r2/
-	// MY_BUCKET: R2Bucket;
-	//
-	// Example binding to a Service. Learn more at https://developers.cloudflare.com/workers/runtime-apis/service-bindings/
-	// MY_SERVICE: Fetcher;
-	//
-	// Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
-	// MY_QUEUE: Queue;
+const app = new Hono<{ Bindings: Bindings }>()
+
+const scope = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/wallet_object.issuer']
+
+const getToken = async (c: any) => {
+  const authInfo = {
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID: c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
+    GOOGLE_SERVICE_ACCOUNT_PROJECT_ID: c.env.GOOGLE_SERVICE_ACCOUNT_PROJECT_ID,
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID: c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_ID,
+  }
+  return await getAuthToken(authInfo, scope)
 }
 
-export default {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		return new Response('Hello World!');
-	},
-};
+app.get('/', () => {
+  return new Response(
+    JSON.stringify({
+      message: 'Welcome to the Kips API',
+      health: 'working, at least of this endpoint.',
+    }),
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  )
+})
+
+app.get('/create-pass-class', async (c: any) => {
+  const token = await getToken(c)
+  const passClass = await createPassClass(c.env.GOOGLE_PAY_ISSUER_ID, token)
+  let message = ''
+  let status = 200
+  if (!passClass) {
+    message = 'Pass Class Creation Failed'
+    status = 500
+  } else {
+    message = 'Pass Class Created'
+  }
+  return new Response(
+    JSON.stringify({
+      message: message,
+      passClass,
+    }),
+    {
+      status: status,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  )
+})
+
+app.get('/create-pass-object', async (c: any) => {
+  const sa_email = c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL
+  const sa_privkey = c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+  const passObject = await createPassObject(
+    c.env.GOOGLE_PAY_ISSUER_ID,
+    `${c.env.GOOGLE_PAY_ISSUER_ID}.codelab_class`,
+    'codelab_object',
+    'Hello World',
+    sa_privkey,
+    sa_email
+  )
+
+  return new Response(
+    JSON.stringify({
+      message: 'Pass Object Created',
+      passObject: passObject,
+    }),
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  )
+})
+export default app
