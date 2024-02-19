@@ -1,13 +1,21 @@
 import { Hono } from 'hono'
 import { Bindings } from './bindings'
 import { createPassClass, createPassObject } from './googlePay'
-import { getAuthToken } from './googleAuth'
+import { getAuthToken } from './googleAuth.lib'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
 const scope = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/wallet_object.issuer']
 
-const getToken = async (c: any) => {
+const getToken = async (c: {
+  env: {
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: string
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: string
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID: string
+    GOOGLE_SERVICE_ACCOUNT_PROJECT_ID: string
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID: string
+  }
+}) => {
   const authInfo = {
     GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
     GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
@@ -33,7 +41,7 @@ app.get('/', () => {
   )
 })
 
-app.get('/create-pass-class', async (c: any) => {
+app.get('/create-pass-class', async (c) => {
   const token = await getToken(c)
   const passClass = await createPassClass(c.env.GOOGLE_PAY_ISSUER_ID, token)
   let message = ''
@@ -58,7 +66,7 @@ app.get('/create-pass-class', async (c: any) => {
   )
 })
 
-app.get('/create-pass-object', async (c: any) => {
+app.get('/create-pass-object', async (c) => {
   const sa_email = c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL
   const sa_privkey = c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
   const passObject = await createPassObject(

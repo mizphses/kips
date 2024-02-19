@@ -9,3 +9,7 @@ KIPS is a scripts that works on Cloudflare Workers for who wants to issue pass o
   - You need to set to environment variables like `.env.sample`
 
 - Cloudflare Workers or compatible environment
+
+## Useful Docs
+
+[REST Resource: genericclass (Google)](https://developers.google.com/wallet/reference/rest/v1/genericclass)

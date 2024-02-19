@@ -1,90 +1,12 @@
-import { AccessToken } from './googleAuth'
+import { AccessToken } from './googleAuth.lib'
 import * as jose from 'jose'
-
-export type genericClass = {
-  id: string
-  classTemplateInfo: {
-    cardTemplateOverride: {
-      cardRowTemplateInfos: [
-        {
-          twoItems: {
-            startItem: {
-              firstValue: {
-                fields: [
-                  {
-                    fieldPath: string
-                  }
-                ]
-              }
-            }
-            endItem: {
-              firstValue: {
-                fields: [
-                  {
-                    fieldPath: string
-                  }
-                ]
-              }
-            }
-          }
-        }
-      ]
-    }
-    detailsTemplateOverride: {
-      detailsItemInfos: [
-        {
-          item: {
-            firstValue: {
-              fields: [
-                {
-                  fieldPath: string
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
-  }
-  imageModulesData: [
-    {
-      mainImage: {
-        sourceUri: {
-          uri: string
-        }
-        contentDescription: {
-          defaultValue: {
-            language: string
-            value: string
-          }
-        }
-      }
-      id: string
-    }
-  ]
-  textModulesData: [
-    {
-      header: string
-      body: string
-      id: string
-    }
-  ]
-  linksModuleData: {
-    uris: [
-      {
-        uri: string
-        description: string
-        id: string
-      }
-    ]
-  }
-}
+import { GenericClass, GenericObject } from './types/pass'
 
 export async function createPassClass(issuerId: string, token: AccessToken) {
   const classId = `${issuerId}.m1_test_class`
   const baseUrl = 'https://walletobjects.googleapis.com/walletobjects/v1'
   // TODO: Create a Generic pass class
-  let genericClass = {
+  const genericClass: GenericClass = {
     id: `${classId}`,
     classTemplateInfo: {
       cardTemplateOverride: {
@@ -234,9 +156,9 @@ export async function createPassObject(
   sa_privkey: string,
   sa_email: string
 ) {
-  let objectId = `${issuerId}.${objCode}`
+  const objectId = `${issuerId}.${objCode}`
 
-  let genericObject = {
+  const genericObject: GenericObject = {
     id: `${objectId}`,
     classId: classId,
     genericType: 'GENERIC_TYPE_UNSPECIFIED',
@@ -267,6 +189,7 @@ export async function createPassObject(
     barcode: {
       type: 'QR_CODE',
       value: `${content}`,
+      alternateText: `${content} QR code`,
     },
     heroImage: {
       sourceUri: {

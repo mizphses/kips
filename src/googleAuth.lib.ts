@@ -25,23 +25,21 @@ function decodeCredentials(
   let credentials = cache.get(key) as Credentials | undefined
 
   if (!credentials) {
-    let credentials_base = {
+    const credentials_base = {
       type: 'service_account',
-      client_email: env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL as string,
-      private_key_str: env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY as string,
-      private_key_id: env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID as string,
+      client_email: env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
+      private_key_str: env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+      private_key_id: env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
       project_id: env.GOOGLE_SERVICE_ACCOUNT_PROJECT_ID,
       client_id: env.GOOGLE_SERVICE_ACCOUNT_CLIENT_ID,
       universe_domain: 'googleapis.com',
       auth_uri: 'https://accounts.google.com/o/oauth2/auth',
       token_uri: 'https://oauth2.googleapis.com/token',
       auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURI(
-        env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL as string
-      )}`,
+      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURI(env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL)}`,
       private_key: null as unknown as ArrayBuffer,
     }
-    const keyBase64 = (credentials_base.private_key_str as string)
+    const keyBase64 = credentials_base.private_key_str
       .replace('-----BEGIN PRIVATE KEY-----', '')
       .replace('-----END PRIVATE KEY-----', '')
       .replace(/\n/g, '')
