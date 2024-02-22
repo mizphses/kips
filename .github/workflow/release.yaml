@@ -1,0 +1,66 @@
+name: Release Production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  Release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate release tag
+        if: steps.s3_sync.outcome == 'success'
+        id: release_tag
+        run: |
+          VERSION=$(date +'%Y.%m.%d.%H%M')
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+        env:
+          TZ: 'Asia/Tokyo'
+
+      - name: Release
+        uses: release-drafter/release-drafter@v5
+        with:
+          tag: ${{ steps.release_tag.outputs.VERSION }}
+          name: ${{ steps.release_tag.outputs.VERSION }}
+          version: ${{ steps.release_tag.outputs.VERSION }}
+          publish: true
+          commitish: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          secrets: |
+            GOOGLE_PAY_ISSUER_ID
+            GOOGLE_SERVICE_ACCOUNT_PROJECT_ID
+            GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID
+            GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+            GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL
+            GOOGLE_SERVICE_ACCOUNT_CLIENT_ID
+            GOOGLE_SERVICE_ACCOUNT_CLIENT_X509_CERT_URL
+            PW_PEPPER
+            JWT_SECRET
+        env:
+          GOOGLE_PAY_ISSUER_ID: ${{ secrets.GOOGLE_PAY_ISSUER_ID }}
+          GOOGLE_SERVICE_ACCOUNT_PROJECT_ID: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PROJECT_ID }}
+          GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID }}
+          GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          GOOGLE_SERVICE_ACCOUNT_CLIENT_ID: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CLIENT_ID }}
+          GOOGLE_SERVICE_ACCOUNT_CLIENT_X509_CERT_URL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CLIENT_X509_CERT_URL }}
+          PW_PEPPER: ${{ secrets.PW_PEPPER }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
