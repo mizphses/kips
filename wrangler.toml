@@ -17,3 +17,7 @@ id = "bb521cc376f547dcba3ae2542360b7e3"
 [[kv_namespaces]]
 binding = "KIPS_PASS_CLASS"
 id = "5a6c29e943fa40aa9ce550cdbe7f1a5a"
+
+[[kv_namespaces]]
+binding = "KIPS_PASS_OBJECT"
+id = "8578caf47acd4c9383aabb53134f15a7"

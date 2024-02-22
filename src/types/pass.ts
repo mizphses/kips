@@ -240,3 +240,54 @@ export type GenericObject = {
 
   wideLogo?: ImageObject
 }
+
+export type GenericClassRequest = {
+  classTemplateInfo?: ClassTemplateInfo
+  imageModulesData?: {
+    mainImage: ImageObject
+    id: string
+  }[]
+  textModulesData?: TextModulesData[]
+  linksModuleData?: {
+    uris: UriObject[]
+  }
+  // enableSmartTap?: boolean
+  // redemptionIssuers?: [string]
+  securityAnimation?: {
+    animationType: string
+  }
+  multipleDevicesAndHoldersAllowedStatus?: string
+  callbackOptions?: CallbackOptions
+  viewUnlockRequirement?: string
+}
+
+export type GenericObjectRequest = {
+  genericType: string
+  cardTitle: LocalizedString
+  subheader?: LocalizedString
+  header: LocalizedString
+  logo?: ImageObject
+  hexBackgroundColor?: string
+  notifications?: Notifications
+  classId: string
+  barcode: BarcodeObject
+  heroImage?: ImageObject
+  validTimeInterval?: TimeInterval
+  imageModulesData?: ImageModuleData[]
+  textModulesData?: TextModuleData[]
+  linksModuleData?: {
+    uris: UriObject[]
+  }
+  appLinkData?: AppLinkData
+  groupingInfo?: GroupingInfo
+  // smartTapRedemptionValue: string
+  rotatingBarcode?: RotatingBarcode
+  state?: string
+  hasUsers?: boolean
+  passConstraints?: {
+    screenshotEligibility: string
+    nfcConstraint: string[]
+  }
+
+  wideLogo?: ImageObject
+}

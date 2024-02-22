@@ -3,6 +3,8 @@ import { cors } from 'hono/cors'
 import { Bindings } from './bindings'
 import { createPassClass, createPassObject, getToken } from './googlePay'
 import { RegisterUser, authUserByMail, tokenAuth, createToken, getUserSecret, getUserByKey } from './UserAccount'
+import { GenericClassRequest, GenericObjectRequest } from './types/pass'
+import { v4 as uuidv4 } from 'uuid'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -160,8 +162,13 @@ app.get('/pass-class/create', async (c) => {
     )
   }
   const token = await getToken(c)
-  const classSlug = 'test202404'
-  const { result, classJson } = await createPassClass(classSlug, c.env.GOOGLE_PAY_ISSUER_ID, token)
+  const passClassId = uuidv4()
+  const genericClassRequest = await c.req.json<GenericClassRequest>()
+  const genericClass = {
+    ...genericClassRequest,
+    id: passClassId || '',
+  }
+  const { result, classJson } = await createPassClass(passClassId, c.env.GOOGLE_PAY_ISSUER_ID, token, genericClass)
   let message = ''
   let status = 200
   if (!result) {
@@ -171,7 +178,7 @@ app.get('/pass-class/create', async (c) => {
     message = 'Pass Class Created'
     const passClassText = JSON.stringify(classJson)
     console.log(passClassText)
-    c.env.KIPS_PASS_CLASS.put(classSlug, passClassText)
+    c.env.KIPS_PASS_CLASS.put(passClassId, passClassText)
   }
   return new Response(
     JSON.stringify({
@@ -189,17 +196,30 @@ app.get('/pass-class/create', async (c) => {
 
 // Google Pay パスオブジェクト作成
 app.get('/pass-object/create', async (c) => {
+  const genericObjectRequest = await c.req.json<GenericObjectRequest>()
+  const objectId = uuidv4()
+  const genericObject = {
+    ...genericObjectRequest,
+    id: objectId,
+  }
+  if (c.env.KIPS_PASS_CLASS.get(genericObject.classId) === null) {
+    return new Response(
+      JSON.stringify({
+        message: 'Pass Class Not Found',
+      }),
+      {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
   const sa_email = c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL
   const sa_privkey = c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
-  const passObject = await createPassObject(
-    c.env.GOOGLE_PAY_ISSUER_ID,
-    `${c.env.GOOGLE_PAY_ISSUER_ID}.codelab_class`,
-    'codelab_object',
-    'Hello World',
-    sa_privkey,
-    sa_email
-  )
-
+  const passObject = await createPassObject(genericObject, sa_privkey, sa_email)
+  const passObjectText = JSON.stringify(passObject)
+  c.env.KIPS_PASS_OBJECT.put(objectId, passObjectText)
   return new Response(
     JSON.stringify({
       message: 'Pass Object Created',

@@ -2,110 +2,10 @@ import { AccessToken, getAuthToken } from './googleAuth.lib'
 import * as jose from 'jose'
 import { GenericClass, GenericObject } from './types/pass'
 
-export async function createPassClass(classSlug: string, issuerId: string, token: AccessToken) {
+export async function createPassClass(classSlug: string, issuerId: string, token: AccessToken, genericClass: GenericClass) {
   const classId = `${issuerId}.${classSlug}`
   const baseUrl = 'https://walletobjects.googleapis.com/walletobjects/v1'
   // TODO: Create a Generic pass class
-  const genericClass: GenericClass = {
-    id: `${classId}`,
-    classTemplateInfo: {
-      cardTemplateOverride: {
-        cardRowTemplateInfos: [
-          {
-            twoItems: {
-              startItem: {
-                firstValue: {
-                  fields: [
-                    {
-                      fieldPath: 'object.textModulesData["points"]',
-                    },
-                  ],
-                },
-              },
-              endItem: {
-                firstValue: {
-                  fields: [
-                    {
-                      fieldPath: 'object.textModulesData["contacts"]',
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        ],
-      },
-      detailsTemplateOverride: {
-        detailsItemInfos: [
-          {
-            item: {
-              firstValue: {
-                fields: [
-                  {
-                    fieldPath: 'class.imageModulesData["event_banner"]',
-                  },
-                ],
-              },
-            },
-          },
-          {
-            item: {
-              firstValue: {
-                fields: [
-                  {
-                    fieldPath: 'class.textModulesData["game_overview"]',
-                  },
-                ],
-              },
-            },
-          },
-          {
-            item: {
-              firstValue: {
-                fields: [
-                  {
-                    fieldPath: 'class.linksModuleData.uris["official_site"]',
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      },
-    },
-    imageModulesData: [
-      {
-        mainImage: {
-          sourceUri: {
-            uri: 'https://imgur.com/Zwiaac7.png',
-          },
-          contentDescription: {
-            defaultValue: {
-              language: 'ja-JP',
-              value: 'イオカードパス（GoogleIoに因んで）',
-            },
-          },
-        },
-        id: 'event_banner',
-      },
-    ],
-    textModulesData: [
-      {
-        header: 'いい感じのヘッダテキスト',
-        body: '本文だぜ〜',
-        id: 'game_overview',
-      },
-    ],
-    linksModuleData: {
-      uris: [
-        {
-          uri: 'https://io.google/2022/',
-          description: "Official I/O '22 Site",
-          id: 'official_site',
-        },
-      ],
-    },
-  }
 
   let response
   try {
@@ -154,68 +54,7 @@ export async function createPassClass(classSlug: string, issuerId: string, token
   }
 }
 
-export async function createPassObject(
-  issuerId: string,
-  classId: string,
-  objCode: string,
-  content: string,
-  sa_privkey: string,
-  sa_email: string
-) {
-  const objectId = `${issuerId}.${objCode}`
-
-  const genericObject: GenericObject = {
-    id: `${objectId}`,
-    classId: classId,
-    genericType: 'GENERIC_TYPE_UNSPECIFIED',
-    hexBackgroundColor: '#4285f4',
-    logo: {
-      sourceUri: {
-        uri: 'https://pbs.twimg.com/media/GGrNEz_a0AAN067?format=png&name=240x240',
-      },
-    },
-    cardTitle: {
-      defaultValue: {
-        language: 'ja',
-        value: 'AIペーパー',
-      },
-    },
-    subheader: {
-      defaultValue: {
-        language: 'ja',
-        value: '参加者',
-      },
-    },
-    header: {
-      defaultValue: {
-        language: 'ja',
-        value: '尾川史典',
-      },
-    },
-    barcode: {
-      type: 'QR_CODE',
-      value: `${content}`,
-      alternateText: `${content} QR code`,
-    },
-    heroImage: {
-      sourceUri: {
-        uri: 'https://imgur.com/Zwiaac7.png',
-      },
-    },
-    textModulesData: [
-      {
-        header: 'POINTS',
-        body: '1234',
-        id: 'points',
-      },
-      {
-        header: 'CONTACTS',
-        body: '20',
-        id: 'contacts',
-      },
-    ],
-  }
-
+export async function createPassObject(genericObject: GenericObject, sa_privkey: string, sa_email: string) {
   // TODO: Create the signed JWT and link
   const claims = {
     iss: sa_email,
