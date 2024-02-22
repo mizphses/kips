@@ -4,7 +4,7 @@ compatibility_date = "2024-02-08"
 
 [[kv_namespaces]]
 binding = "KIPS_KEYS"
-id = "177f177f4b9db26143b69ae1799be2c25c55"
+id = "177f4b9db26143b69ae1799be2c25c55"
 
 [[kv_namespaces]]
 binding = "KIPS_LOGINS"
