@@ -1,3 +1,4 @@
+type AnimationType = 'ANIMATION_UNSPECIFIED' | 'FOIL_SHIMMER'
 type AppLinkData = {
   androidAppLinkInfo?: AppLinkInfo
 
@@ -40,7 +41,7 @@ type BarcodeObject = {
 
   type?: Barcode
 
-  renderEncoding?: 'RENDER_ENCODING_UNSPECIFIED' | 'UTF_8'
+  renderEncoding?: RenderEncoding
 
   value?: string
 
@@ -105,6 +106,8 @@ type ClassTemplateInfo = {
   }
 }
 
+type DataFormat = 'DATE_FORMAT_UNSPECIFIED' | 'DATE_TIME' | 'DATE_ONLY' | 'TIME_ONLY' | 'DATE_TIME_YEAR' | 'YEAR_MONTH' | 'YEAR_MONTH_DAY'
+
 type DetailsItemInfos = {
   item: TemplateItem
 }
@@ -115,15 +118,30 @@ type FieldSelector = {
   fields: {
     fieldPath: string
 
-    dateFormat?: 'DATE_FORMAT_UNSPECIFIED' | 'DATE_TIME' | 'DATE_ONLY' | 'TIME_ONLY' | 'DATE_TIME_YEAR' | 'YEAR_MONTH' | 'YEAR_MONTH_DAY'
+    dateFormat?: DataFormat
   }[]
 }
 
 type FirstRowOption = {
-  transitOption: 'TRANSIT_OPTION_UNSPECIFIED' | 'ORIGIN_AND_DESTINATION_NAMES' | 'ORIGIN_AND_DESTINATION_CODES' | 'ORIGIN_NAME'
+  transitOption: TransitOption
 
   fieldOption: FieldSelector
 }
+
+type GenericType =
+  | 'GENERIC_TYPE_UNSPECIFIED'
+  | 'GENERIC_SEASON_PASS'
+  | 'GENERIC_UTILITY_BILLS'
+  | 'GENERIC_PARKING_PASS'
+  | 'GENERIC_VOUCHER'
+  | 'GENERIC_GYM_MEMBERSHIP'
+  | 'GENERIC_LIBRARY_MEMBERSHIP'
+  | 'GENERIC_RESERVATIONS'
+  | 'GENERIC_AUTO_INSURANCE'
+  | 'GENERIC_HOME_INSURANCE'
+  | 'GENERIC_ENTRY_TICKET'
+  | 'GENERIC_RECEIPT'
+  | 'GENERIC_OTHER'
 
 type GroupingInfo = {
   sortIndex: number
@@ -170,10 +188,19 @@ type Notifications = {
     enableNotification: boolean
   }
 }
+
+type MultipleDevicesAndHoldersAllowedStatus = 'STATUS_UNSPECIFIED' | 'MULTIPLE_HOLDERS' | 'ONE_USER_ALL_DEVICES	' | 'ONE_USER_ONE_DEVICE'
+
+type NfcConstraint = 'NFC_CONSTRAINT_UNSPECIFIED' | 'BLOCK_PAYMENT' | 'BLOCK_CLOSED_LOOP_TRANSIT'
+
+type PredefinedItem = 'PREDEFINED_ITEM_UNSPECIFIED' | 'FREQUENT_FLYER_PROGRAM_NAME_AND_NUMBER' | 'FLIGHT_NUMBER_AND_OPERATING_FLIGHT_NUMBER'
+
+type RenderEncoding = 'RENDER_ENCODING_UNSPECIFIED' | 'UTF_8'
+
 type RotatingBarcode = {
   type: Barcode
 
-  renderEncoding: 'RENDER_ENCODING_UNSPECIFIED' | 'UTF_8'
+  renderEncoding: RenderEncoding
 
   valuePattern: string
 
@@ -207,7 +234,7 @@ type TemplateItem = {
 
   secondValue?: FieldSelector
 
-  predefinedItem?: 'PREDEFINED_ITEM_UNSPECIFIED' | 'FREQUENT_FLYER_PROGRAM_NAME_AND_NUMBER' | 'FLIGHT_NUMBER_AND_OPERATING_FLIGHT_NUMBER'
+  predefinedItem?: PredefinedItem
 }
 
 type TextModuleData = {
@@ -234,6 +261,8 @@ type TimeInterval = {
   }
 }
 
+type TransitOption = 'TRANSIT_OPTION_UNSPECIFIED' | 'ORIGIN_AND_DESTINATION_NAMES' | 'ORIGIN_AND_DESTINATION_CODES' | 'ORIGIN_NAME'
+
 type TranslatedString = {
   kind?: string // deprecated
 
@@ -242,6 +271,10 @@ type TranslatedString = {
   value: string // should be utf-8
 }
 
+type StateType = 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'INACTIVE'
+
+type ScreenshotEligibility = 'SCREENSHOT_ELIGIBILITY_UNSPECIFIED' | 'ELIGIBLE' | 'INELIGIBLE'
+
 type UriObject = {
   uri: string
 
@@ -249,6 +282,8 @@ type UriObject = {
 
   id: string
 }
+
+type ViewUnlockRequirement = 'VIEW_UNLOCK_REQUIREMENT_UNSPECIFIED' | 'UNLOCK_NOT_REQUIRED' | 'UNLOCK_REQUIRED_TO_VIEW'
 
 export type GenericClass = {
   id: string
@@ -272,31 +307,18 @@ export type GenericClass = {
   // redemptionIssuers?: [string]
 
   securityAnimation?: {
-    animationType: 'ANIMATION_UNSPECIFIED' | 'FOIL_SHIMMER'
+    animationType: AnimationType
   }
 
-  multipleDevicesAndHoldersAllowedStatus?: 'STATUS_UNSPECIFIED' | 'MULTIPLE_HOLDERS' | 'ONE_USER_ALL_DEVICES	' | 'ONE_USER_ONE_DEVICE'
+  multipleDevicesAndHoldersAllowedStatus?: MultipleDevicesAndHoldersAllowedStatus
 
   callbackOptions?: CallbackOptions
 
-  viewUnlockRequirement?: 'VIEW_UNLOCK_REQUIREMENT_UNSPECIFIED' | 'UNLOCK_NOT_REQUIRED' | 'UNLOCK_REQUIRED_TO_VIEW'
+  viewUnlockRequirement?: ViewUnlockRequirement
 }
 
 export type GenericObject = {
-  genericType:
-    | 'GENERIC_TYPE_UNSPECIFIED'
-    | 'GENERIC_SEASON_PASS'
-    | 'GENERIC_UTILITY_BILLS'
-    | 'GENERIC_PARKING_PASS'
-    | 'GENERIC_VOUCHER'
-    | 'GENERIC_GYM_MEMBERSHIP'
-    | 'GENERIC_LIBRARY_MEMBERSHIP'
-    | 'GENERIC_RESERVATIONS'
-    | 'GENERIC_AUTO_INSURANCE'
-    | 'GENERIC_HOME_INSURANCE'
-    | 'GENERIC_ENTRY_TICKET'
-    | 'GENERIC_RECEIPT'
-    | 'GENERIC_OTHER'
+  genericType: GenericType
 
   cardTitle: LocalizedString
 
@@ -336,14 +358,14 @@ export type GenericObject = {
 
   rotatingBarcode?: RotatingBarcode
 
-  state?: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'INACTIVE'
+  state?: StateType
 
   hasUsers?: boolean
 
   passConstraints?: {
-    screenshotEligibility: 'SCREENSHOT_ELIGIBILITY_UNSPECIFIED' | 'ELIGIBLE' | 'INELIGIBLE'
+    screenshotEligibility: ScreenshotEligibility
 
-    nfcConstraint: Array<'NFC_CONSTRAINT_UNSPECIFIED' | 'BLOCK_PAYMENT' | 'BLOCK_CLOSED_LOOP_TRANSIT'>
+    nfcConstraint: NfcConstraint[]
   }
 
   wideLogo?: ImageObject
@@ -369,14 +391,13 @@ export type GenericClassRequest = {
   // redemptionIssuers?: [string]
 
   securityAnimation?: {
-    animationType: 'ANIMATION_UNSPECIFIED' | 'FOIL_SHIMMER'
+    animationType: AnimationType
   }
 
-  multipleDevicesAndHoldersAllowedStatus?: 'STATUS_UNSPECIFIED' | 'MULTIPLE_HOLDERS' | 'ONE_USER_ALL_DEVICES	' | 'ONE_USER_ONE_DEVICE'
-
+  multipleDevicesAndHoldersAllowedStatus?: MultipleDevicesAndHoldersAllowedStatus
   callbackOptions?: CallbackOptions
 
-  viewUnlockRequirement?: 'VIEW_UNLOCK_REQUIREMENT_UNSPECIFIED' | 'UNLOCK_NOT_REQUIRED' | 'UNLOCK_REQUIRED_TO_VIEW'
+  viewUnlockRequirement?: ViewUnlockRequirement
 }
 
 export type GenericObjectRequest = {
@@ -418,14 +439,14 @@ export type GenericObjectRequest = {
 
   rotatingBarcode?: RotatingBarcode
 
-  state?: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'INACTIVE'
+  state?: StateType
 
   hasUsers?: boolean
 
   passConstraints?: {
-    screenshotEligibility: 'SCREENSHOT_ELIGIBILITY_UNSPECIFIED' | 'ELIGIBLE' | 'INELIGIBLE'
+    screenshotEligibility: ScreenshotEligibility
 
-    nfcConstraint: Array<'NFC_CONSTRAINT_UNSPECIFIED' | 'BLOCK_PAYMENT' | 'BLOCK_CLOSED_LOOP_TRANSIT'>
+    nfcConstraint: NfcConstraint[]
   }
 
   wideLogo?: ImageObject
