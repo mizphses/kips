@@ -39,7 +39,7 @@ export const authUserByToken = async (token: string, secretText: string, kv_user
   const secret = new TextEncoder().encode(secretText)
   // tokenの署名を検証する
   const result = await jose.jwtVerify(token, secret).then(
-    (result) => {
+    () => {
       return true
     },
     (error) => {
