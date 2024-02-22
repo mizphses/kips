@@ -27,12 +27,13 @@
     "prettier": "^2.8.8",
     "typescript": "^5.3.3",
     "typescript-eslint": "^7.0.1",
-    "wrangler": "^3.28.3"
+    "wrangler": "^3.28.4"
   },
   "dependencies": {
     "google-auth-library": "^7.14.1",
     "hono": "^4.0.4",
     "jose": "^5.2.2",
+    "js-sha3": "^0.9.3",
     "jsonwebtoken": "^9.0.2",
     "rfc4648": "^1.5.3",
     "web-auth-library": "^1.0.3"

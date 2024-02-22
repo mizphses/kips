@@ -1,9 +1,9 @@
-import { AccessToken } from './googleAuth.lib'
+import { AccessToken, getAuthToken } from './googleAuth.lib'
 import * as jose from 'jose'
 import { GenericClass, GenericObject } from './types/pass'
 
-export async function createPassClass(issuerId: string, token: AccessToken) {
-  const classId = `${issuerId}.m1_test_class`
+export async function createPassClass(classSlug: string, issuerId: string, token: AccessToken) {
+  const classId = `${issuerId}.${classSlug}`
   const baseUrl = 'https://walletobjects.googleapis.com/walletobjects/v1'
   // TODO: Create a Generic pass class
   const genericClass: GenericClass = {
@@ -138,13 +138,19 @@ export async function createPassClass(issuerId: string, token: AccessToken) {
       })
       console.log('Class insert response')
       console.log(response)
-      return true
+      return { result: true, classJson: genericClass }
     } else {
-      return false
+      return {
+        result: false,
+        classJson: null,
+      }
     }
   } catch (e) {
     console.error(e)
-    return false
+    return {
+      result: false,
+      classJson: null,
+    }
   }
 }
 
@@ -225,4 +231,25 @@ export async function createPassObject(
   const token = await new jose.SignJWT(claims).setProtectedHeader({ alg: 'RS256' }).sign(privateKey)
   const saveUrl = `https://pay.google.com/gp/v/save/${token}`
   return saveUrl
+}
+
+export const getToken = async (c: {
+  env: {
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: string
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: string
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID: string
+    GOOGLE_SERVICE_ACCOUNT_PROJECT_ID: string
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID: string
+  }
+}) => {
+  const scope = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/wallet_object.issuer']
+
+  const authInfo = {
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID: c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
+    GOOGLE_SERVICE_ACCOUNT_PROJECT_ID: c.env.GOOGLE_SERVICE_ACCOUNT_PROJECT_ID,
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID: c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_ID,
+  }
+  return await getAuthToken(authInfo, scope)
 }

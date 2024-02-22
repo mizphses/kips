@@ -1,30 +1,19 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import { Bindings } from './bindings'
-import { createPassClass, createPassObject } from './googlePay'
-import { getAuthToken } from './googleAuth.lib'
+import { createPassClass, createPassObject, getToken } from './googlePay'
+import { RegisterUser, authUserByMail, tokenAuth, createToken, getUserSecret, getUserByKey } from './UserAccount'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
-const scope = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/wallet_object.issuer']
-
-const getToken = async (c: {
-  env: {
-    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: string
-    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: string
-    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID: string
-    GOOGLE_SERVICE_ACCOUNT_PROJECT_ID: string
-    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID: string
-  }
-}) => {
-  const authInfo = {
-    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
-    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
-    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID: c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
-    GOOGLE_SERVICE_ACCOUNT_PROJECT_ID: c.env.GOOGLE_SERVICE_ACCOUNT_PROJECT_ID,
-    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID: c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_ID,
-  }
-  return await getAuthToken(authInfo, scope)
-}
+app.use(
+  '*',
+  cors({
+    origin: '*',
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowHeaders: ['Authorization', 'Content-Type', 'X-Api-Key'],
+  })
+)
 
 app.get('/', () => {
   return new Response(
@@ -41,21 +30,153 @@ app.get('/', () => {
   )
 })
 
-app.get('/create-pass-class', async (c) => {
+type User = {
+  email: string
+  password: string
+}
+
+// 認証関係
+app.post('/users/create', async (c) => {
+  const userInfo = await c.req.json<User>()
+  if (await RegisterUser(userInfo, c.env.PW_PEPPER, c.env.KIPS_LOGINS, c.env.KIPS_KEYS, c.env.KIPS_KEY_BY_MAIL)) {
+    return new Response(
+      JSON.stringify({
+        message: 'User Created',
+        mail: userInfo.email,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  } else {
+    return new Response(
+      JSON.stringify({
+        message: 'User Creation Failed',
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
+})
+
+app.post('/users/login', async (c) => {
+  const userInfo = await c.req.json<User>()
+  if (await authUserByMail(userInfo.email, userInfo.password, c.env.PW_PEPPER, c.env.KIPS_LOGINS)) {
+    const token = await createToken(userInfo.email, c.env.JWT_SECRET)
+    return new Response(
+      JSON.stringify({
+        message: 'Login Success',
+        token: token,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  } else {
+    return new Response(
+      JSON.stringify({
+        message: 'Login Failed',
+      }),
+      {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
+})
+
+app.post('/users/apiKey', async (c) => {
+  const authHeader = c.req.header('Authorization') || ''
+  const { result, token } = await tokenAuth(authHeader, c.env.JWT_SECRET, c.env.KIPS_LOGINS)
+  if (result === false) {
+    return new Response(
+      JSON.stringify({
+        message: 'Authorization Failed',
+      }),
+      {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
+  const apiKey = await getUserSecret(token, c.env.KIPS_KEYS)
+  if (apiKey === null) {
+    return new Response(
+      JSON.stringify({
+        message: 'API Key Not Found. Ask your administrator.',
+      }),
+      {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  } else {
+    return new Response(
+      JSON.stringify({
+        message: 'API Key Found',
+        apiKey: apiKey,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
+})
+
+// Google Pay パスクラス作成
+app.get('/pass-class/create', async (c) => {
+  const authHeader = c.req.header('X-Api-Key') || ''
+  const email = await getUserByKey(authHeader, c.env.KIPS_KEY_BY_MAIL)
+  if (email === null) {
+    return new Response(
+      JSON.stringify({
+        message: 'Authorization Failed',
+      }),
+      {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
   const token = await getToken(c)
-  const passClass = await createPassClass(c.env.GOOGLE_PAY_ISSUER_ID, token)
+  const classSlug = 'test202404'
+  const { result, classJson } = await createPassClass(classSlug, c.env.GOOGLE_PAY_ISSUER_ID, token)
   let message = ''
   let status = 200
-  if (!passClass) {
+  if (!result) {
     message = 'Pass Class Creation Failed'
     status = 500
   } else {
     message = 'Pass Class Created'
+    const passClassText = JSON.stringify(classJson)
+    console.log(passClassText)
+    c.env.KIPS_PASS_CLASS.put(classSlug, passClassText)
   }
   return new Response(
     JSON.stringify({
       message: message,
-      passClass,
+      classJson,
     }),
     {
       status: status,
@@ -66,7 +187,8 @@ app.get('/create-pass-class', async (c) => {
   )
 })
 
-app.get('/create-pass-object', async (c) => {
+// Google Pay パスオブジェクト作成
+app.get('/pass-object/create', async (c) => {
   const sa_email = c.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL
   const sa_privkey = c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
   const passObject = await createPassObject(
