@@ -17,8 +17,7 @@ export async function createPassClass(classSlug: string, issuerId: string, token
       },
     })
     if (response.status === 200) {
-      console.log('Class already exists')
-      console.log(response)
+      console.error('Class already exists')
     }
     if (response.status === 404) {
       // Class does not exist
@@ -36,8 +35,6 @@ export async function createPassClass(classSlug: string, issuerId: string, token
         },
         body: JSON.stringify(genericClass),
       })
-      console.log('Class insert response')
-      console.log(response)
       return { result: true, classJson: genericClass }
     } else {
       return {

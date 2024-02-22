@@ -29,7 +29,8 @@ export const RegisterUser = async (userInfo: User, pepper: string, kv_user: KVNa
 }
 
 export const getUserSecret = async (token: string, kv_keys: KVNamespace) => {
-  const email = (await jose.decodeJwt(token).sub) || ''
+  const decodedToken = jose.decodeJwt(token)
+  const email = decodedToken.sub || ''
   const apiKey = await kv_keys.get(email)
   return apiKey
 }
@@ -39,18 +40,17 @@ export const authUserByToken = async (token: string, secretText: string, kv_user
   // tokenの署名を検証する
   const result = await jose.jwtVerify(token, secret).then(
     (result) => {
-      console.log(result)
       return true
     },
     (error) => {
-      console.log(error)
+      console.error(error)
       return false
     }
   )
   if (!result) {
     return false
   }
-  const email = (await jose.decodeJwt(token).sub) || ''
+  const email = jose.decodeJwt(token).sub || ''
   const userInfo = await kv_users.get(email)
   if (userInfo === null) {
     return false

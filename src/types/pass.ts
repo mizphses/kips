@@ -401,7 +401,7 @@ export type GenericClassRequest = {
 }
 
 export type GenericObjectRequest = {
-  genericType: string
+  genericType: GenericType
 
   cardTitle: LocalizedString
 

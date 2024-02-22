@@ -177,8 +177,7 @@ app.get('/pass-class/create', async (c) => {
   } else {
     message = 'Pass Class Created'
     const passClassText = JSON.stringify(classJson)
-    console.log(passClassText)
-    c.env.KIPS_PASS_CLASS.put(passClassId, passClassText)
+    await c.env.KIPS_PASS_CLASS.put(passClassId, passClassText)
   }
   return new Response(
     JSON.stringify({
@@ -219,7 +218,7 @@ app.get('/pass-object/create', async (c) => {
   const sa_privkey = c.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
   const passObject = await createPassObject(genericObject, sa_privkey, sa_email)
   const passObjectText = JSON.stringify(passObject)
-  c.env.KIPS_PASS_OBJECT.put(objectId, passObjectText)
+  await c.env.KIPS_PASS_OBJECT.put(objectId, passObjectText)
   return new Response(
     JSON.stringify({
       message: 'Pass Object Created',
