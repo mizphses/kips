@@ -20,12 +20,27 @@ type AppTarget = {
   targetUri: UriObject
 }
 
+type Barcode =
+  | 'BARCODE_TYPE_UNSPECIFIED'
+  | 'AZTEC'
+  | 'CODE_39'
+  | 'CODE_128'
+  | 'CODABAR'
+  | 'DATA_MATRIX'
+  | 'EAN_8'
+  | 'EAN_13'
+  | 'ITF_14'
+  | 'PDF_417'
+  | 'QR_CODE'
+  | 'UPC_A'
+  | 'TEXT_ONLY'
+
 type BarcodeObject = {
   kind?: string // deprecated
 
-  type?: string
+  type?: Barcode
 
-  renderEncoding?: string
+  renderEncoding?: 'RENDER_ENCODING_UNSPECIFIED' | 'UTF_8'
 
   value?: string
 
@@ -123,7 +138,7 @@ type ImageModuleData = {
 }
 
 type ImageObject = {
-  kind?: string
+  kind?: string // deprecated
 
   sourceUri: ImageUri
 
@@ -139,7 +154,7 @@ type ImageUri = {
 }
 
 type LocalizedString = {
-  kind?: string
+  kind?: string // deprecated
 
   translatedValues?: TranslatedString[]
 
@@ -156,9 +171,9 @@ type Notifications = {
   }
 }
 type RotatingBarcode = {
-  type: string
+  type: Barcode
 
-  renderEncoding: string
+  renderEncoding: 'RENDER_ENCODING_UNSPECIFIED' | 'UTF_8'
 
   valuePattern: string
 
@@ -208,7 +223,7 @@ type TextModuleData = {
 }
 
 type TimeInterval = {
-  kind: string
+  kind: string // deprecated
 
   start: {
     date: string
@@ -220,11 +235,11 @@ type TimeInterval = {
 }
 
 type TranslatedString = {
-  kind?: string
+  kind?: string // deprecated
 
-  language: string
+  language: string // should be BCP 47
 
-  value: string
+  value: string // should be utf-8
 }
 
 type UriObject = {
@@ -268,7 +283,20 @@ export type GenericClass = {
 }
 
 export type GenericObject = {
-  genericType: string
+  genericType:
+    | 'GENERIC_TYPE_UNSPECIFIED'
+    | 'GENERIC_SEASON_PASS'
+    | 'GENERIC_UTILITY_BILLS'
+    | 'GENERIC_PARKING_PASS'
+    | 'GENERIC_VOUCHER'
+    | 'GENERIC_GYM_MEMBERSHIP'
+    | 'GENERIC_LIBRARY_MEMBERSHIP'
+    | 'GENERIC_RESERVATIONS'
+    | 'GENERIC_AUTO_INSURANCE'
+    | 'GENERIC_HOME_INSURANCE'
+    | 'GENERIC_ENTRY_TICKET'
+    | 'GENERIC_RECEIPT'
+    | 'GENERIC_OTHER'
 
   cardTitle: LocalizedString
 
@@ -308,14 +336,14 @@ export type GenericObject = {
 
   rotatingBarcode?: RotatingBarcode
 
-  state?: string
+  state?: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'INACTIVE'
 
   hasUsers?: boolean
 
   passConstraints?: {
-    screenshotEligibility: string
+    screenshotEligibility: 'SCREENSHOT_ELIGIBILITY_UNSPECIFIED' | 'ELIGIBLE' | 'INELIGIBLE'
 
-    nfcConstraint: string[]
+    nfcConstraint: Array<'NFC_CONSTRAINT_UNSPECIFIED' | 'BLOCK_PAYMENT' | 'BLOCK_CLOSED_LOOP_TRANSIT'>
   }
 
   wideLogo?: ImageObject
@@ -341,14 +369,14 @@ export type GenericClassRequest = {
   // redemptionIssuers?: [string]
 
   securityAnimation?: {
-    animationType: string
+    animationType: 'ANIMATION_UNSPECIFIED' | 'FOIL_SHIMMER'
   }
 
-  multipleDevicesAndHoldersAllowedStatus?: string
+  multipleDevicesAndHoldersAllowedStatus?: 'STATUS_UNSPECIFIED' | 'MULTIPLE_HOLDERS' | 'ONE_USER_ALL_DEVICES	' | 'ONE_USER_ONE_DEVICE'
 
   callbackOptions?: CallbackOptions
 
-  viewUnlockRequirement?: string
+  viewUnlockRequirement?: 'VIEW_UNLOCK_REQUIREMENT_UNSPECIFIED' | 'UNLOCK_NOT_REQUIRED' | 'UNLOCK_REQUIRED_TO_VIEW'
 }
 
 export type GenericObjectRequest = {
@@ -390,14 +418,14 @@ export type GenericObjectRequest = {
 
   rotatingBarcode?: RotatingBarcode
 
-  state?: string
+  state?: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'INACTIVE'
 
   hasUsers?: boolean
 
   passConstraints?: {
-    screenshotEligibility: string
+    screenshotEligibility: 'SCREENSHOT_ELIGIBILITY_UNSPECIFIED' | 'ELIGIBLE' | 'INELIGIBLE'
 
-    nfcConstraint: string[]
+    nfcConstraint: Array<'NFC_CONSTRAINT_UNSPECIFIED' | 'BLOCK_PAYMENT' | 'BLOCK_CLOSED_LOOP_TRANSIT'>
   }
 
   wideLogo?: ImageObject
