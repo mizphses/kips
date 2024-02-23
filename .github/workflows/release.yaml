@@ -17,7 +17,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate release tag
-        if: steps.s3_sync.outcome == 'success'
         id: release_tag
         run: |
           VERSION=$(date +'%Y.%m.%d.%H%M')
